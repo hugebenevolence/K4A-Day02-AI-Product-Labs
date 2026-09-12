@@ -50,7 +50,7 @@ Giữ bài nào: actor cụ thể, workflow vẽ được 3-7 bước, bottlenec
 
 | Rank | Problem (copy từ bảng scan) | Vì sao chọn (2-3 ý) | Điều còn chưa chắc |
 |---|---|---|---|
-| 1 | Reproduce baseline paper thiếu code/config (VD: MoE-SAM) | Actor cụ thể (bản thân); workflow vẽ được 6 bước rõ; bottleneck rõ (thiếu config/eval/preprocessing); có số liệu ngành xác nhận pain thật + research cho thấy tool hiện tại chưa giải xong (accuracy thấp, chưa đóng gói sản phẩm) | Success metric "phát hiện đúng % mục thiếu" cần thử trên vài paper thật mới chốt số chính xác được |
+| 1 | Reproduce baseline paper thiếu code/config (VD: MoE-SAM) | Actor cụ thể (bản thân); workflow vẽ được 6 bước rõ; bottleneck rõ (thiếu config/eval/preprocessing); có số liệu ngành xác nhận pain thật + research cho thấy tool hiện tại chưa giải xong đúng ở khâu exact localization | Chưa chắc multi-agent có vượt được baseline single-prompt LLM không — phải chạy thử trên ReproRepo mới biết; nếu không vượt thì kiến trúc nhiều agent là thừa |
 | 2 | Tổng hợp + validate note họp chia task | Lặp lại đều 4 lần/tuần, impact lớn (12-16h/tuần), dễ đo trước/sau vì có baseline thời gian rõ | AI transcribe/tóm tắt tiếng Việt độ chính xác thế nào — chưa test thử thực tế |
 | 3 | (chưa chọn — cần scan thêm 3+ problem nữa để đủ tối thiểu 5 dòng theo yêu cầu Phase 1) | | |
 
@@ -62,62 +62,75 @@ Giữ bài nào: actor cụ thể, workflow vẽ được 3-7 bước, bottlenec
 
 ```text
 Problem 1 câu:
-Mỗi khi cần reproduce 1 baseline cho project, researcher mất trung bình 2 ngày (tìm code + setup env, chuẩn bị data) và nhiều lần bị kẹt hoàn toàn vì paper — kể cả paper top-tier — không publish đủ config, cách evaluate, cách preprocessing (case cụ thể: MoE-SAM, MICCAI 2025).
+Mỗi khi cần reproduce một baseline, researcher mất ~2 ngày và nhiều lần bị kẹt hẳn vì paper (kể cả top-tier) không publish đủ config, cách evaluate, cách preprocessing — và chỉ phát hiện thiếu gì khi đã code được nửa đường (case thật: MoE-SAM, MICCAI 2025).
 
 Actor:
-Bản thân — AI Researcher / Software Engineer, cần reproduce baseline để so sánh với model/phương pháp mới trong project nghiên cứu.
+AI Researcher / Software Engineer cần reproduce baseline để so sánh với phương pháp mới trong project.
 
 Thời điểm / bối cảnh:
-Đầu mỗi project nghiên cứu, khi cần benchmark với một hoặc nhiều baseline khác nhau; lặp lại mỗi lần đổi baseline.
+Đầu mỗi project, lặp lại mỗi lần thêm một baseline mới để benchmark.
 
 Current workflow 3-7 bước:
 1. Đọc paper, tìm code publish (nếu có)
-2. Setup môi trường theo hướng dẫn (thường thiếu/không đầy đủ)
-3. Tìm và chuẩn bị data theo mô tả trong paper
-4. Phát hiện thiếu config / cách evaluate / cách preprocessing giữa lúc code  <-- bottleneck
-5. Tự đoán, hỏi tác giả, hoặc tìm nguồn khác để bù phần thiếu
-6. Chạy lại và verify số ra có khớp paper report không
+2. Setup môi trường
+3. Tìm và chuẩn bị data
+4. Phát hiện thiếu config / eval protocol / preprocessing giữa lúc code  <-- bottleneck
+5. Tự đoán, hỏi tác giả, hoặc lục nguồn khác
+6. Chạy lại, verify số có khớp paper không
 
 Bottleneck:
-Bước 4-5 — paper chỉ publish kết quả, không publish đủ code/config/data; researcher chỉ phát hiện thiếu gì giữa lúc code, không biết trước, nên bị kẹt bất ngờ và phải tự đoán, không chắc đoán đúng cho tới khi chạy ra số.
+Bước 4-5. Thiếu gì chỉ lộ ra khi đã đầu tư thời gian, nên không kịp đổi hướng; và khi thiếu thì phải đoán mò, không biết đoán đúng hay sai cho tới lúc chạy ra số.
 
 Impact:
-~2 ngày/baseline (16h): 1 ngày tìm code + setup env, 1 ngày chuẩn bị data — chưa tính thời gian bị kẹt thêm khi thiếu info (case MoE-SAM là ví dụ bị kẹt hẳn). Nếu 1 project cần so sánh 3-4 baseline, tổng có thể lên 6-8+ ngày chỉ để setup. Số liệu ngành xác nhận quy mô: khảo sát Nature trên 1.576 researcher cho thấy hơn 70% từng thất bại khi cố reproduce công trình người khác.
+~16h/baseline; 1 project 3-4 baseline → 6-8 ngày chỉ để setup, chưa tính lúc bị kẹt. Quy mô ngành: khảo sát Nature (1.576 researcher) — hơn 70% từng fail reproduce công trình người khác.
 
-Success metric:
-Giảm thời gian "biết paper/repo thiếu gì" từ mò mẫm thủ công (không xác định, có thể phát hiện dần trong nhiều giờ/ngày code) xuống dưới 30 phút để có checklist rõ: thiếu mục nào, lệch mục nào so với paper, mục nào chưa từng được document ở đâu (cần hỏi tác giả). Đo bằng: % mục thiếu thật được checklist phát hiện đúng, so với việc tự phát hiện dần khi code.
+Success metric (metric duy nhất):
+Exact-localization accuracy (top-3) trên benchmark ReproRepo (EMNLP 2026, 1.149 paper, nhãn lấy từ GitHub Issues người thật raise): trong 3 mục tool chỉ ra, có mục nào trùng đúng blocker thật ở mức item (đúng file / đúng config field / đúng bước) không.
+Lý do chọn metric này: ReproRepo cho thấy agent hiện tại surface được blocker cho ~90% paper nhưng yếu đúng ở exact localization → đây là khoảng trống đo được, và benchmark đã release sẵn nên không phải tự dựng ground truth.
+Baseline phải vượt: single-prompt LLM (hỏi thẳng "paper này thiếu gì").
 
 Non-AI alternative:
-Dùng thủ công ML Code Completeness Checklist (NeurIPS/Papers with Code, 5 mục: dependencies, training code, evaluation code, pretrained model, README+results) để tự tick — không cần AI, nhưng chỉ check được "có file hay không" (structural), không check được "config có khớp số trong paper không" (semantic).
+Tự tick ML Code Completeness Checklist (Papers with Code / NeurIPS, 5 mục). Rẻ, nhưng chỉ biết "có file hay không", không biết config có khớp số trong paper không, và không tìm được câu trả lời nằm trong GitHub issue đã đóng.
 
 AI hypothesis:
-Rule quét repo tự động theo checklist mở rộng (5 mục gốc + preprocessing + config-per-experiment) để báo thiếu file gì; Workflow trích xuất bảng hyperparameter/kết quả từ paper rồi diff với giá trị trong config/code để báo lệch gì hoặc thiếu tài liệu ở cả 2 nơi. Không cần Agent tự sinh code hay tự đoán số thay người.
+Multi-agent "ReproScout", 3 agent thu thập + 1 agent tổng hợp:
+  - Paper Agent  : parse paper (text + bảng + hình) → claim có cấu trúc {component, value}
+  - Repo Agent   : parse repo/config/code → artifact đã implement {value, file:line}
+  - Issue Agent  : đào GitHub Issues/PR của repo → blocker người khác đã báo + reply tác giả
+  - Reconciler   : đối chiếu 3 nguồn → mỗi mục checklist gán: đủ / thiếu-lệch / không chắc,
+                   kèm trích dẫn nguồn
+Multi-agent là cần thiết vì 3 nguồn khác loại nhau (PDF đa phương thức, code, thread issue), mỗi nguồn cần cách tìm riêng và phải tự quyết query — một prompt đơn không ôm nổi.
+Boundary: không sinh code thay, không tự điền giá trị đoán; mục "không chắc" bắt buộc người xem trước khi kết luận.
 
 Quick gut:
 [ ] No AI / process fix
 [ ] Rule
-[x] Workflow
-[ ] Agent
+[ ] Workflow
+[x] Agent   — agent ở tầng thu thập (tự quyết query/tool để tìm trong repo & issue),
+              nhưng orchestration cố định 4 stage và người giữ quyết định cuối.
+              Không chọn mức tự sinh code vì PaperBench cho thấy agent tốt nhất chỉ
+              đạt 21.0% so với người 41.4% — chưa đủ tin để giao.
 [ ] Chưa biết
 ```
 
 **Draft workflow Card #1** (ASCII / Mermaid / ảnh đính kèm):
 
 ```text
-CURRENT STATE — ~16 giờ (2 ngày)/baseline, có thể kéo dài vô hạn nếu kẹt (case MoE-SAM)
+CURRENT STATE — ~16h/baseline, kéo dài vô hạn nếu kẹt (case MoE-SAM)
 
-[1 Tìm + đọc code: ~4h] → [2 Setup env: ~4h] → [3 Tìm/chuẩn bị data: ~8h]
-→ [4 Phát hiện thiếu config/eval/preprocessing giữa lúc code: thời gian không xác định]  <-- bottleneck
-→ [5 Tự đoán / hỏi tác giả / tìm nguồn khác]
-→ [6 Chạy lại verify]
+[1 Tìm+đọc code: 4h] → [2 Setup env: 4h] → [3 Chuẩn bị data: 8h]
+→ [4 Phát hiện thiếu giữa lúc code: không xác định]  <-- bottleneck
+→ [5 Đoán / hỏi tác giả] → [6 Chạy verify]
 
-FUTURE STATE — setup giữ ~16h, nhưng biết rõ rủi ro thiếu gì từ đầu (~27 phút check trước)
+FUTURE STATE — thêm ~30' chẩn đoán TRƯỚC khi bỏ 16h
 
-[1 Paste link paper + repo vào tool: 2'] → [2 Rule quét file structural: 2'] → [3 Workflow diff config vs bảng paper: 10']
-→ [4 Researcher review checklist kết quả: 15']  <-- human boundary
-→ [5 Bắt đầu setup, biết trước phần nào chắc thiếu để chủ động hỏi tác giả/research thêm ngay từ đầu]
+[1 Paste link paper + repo]
+→ [2 Paper/Repo/Issue Agent chạy song song: ~10']
+→ [3 Reconciler ra báo cáo có trích dẫn: ~5']
+→ [4 Researcher review mục "không chắc": ~15']   <-- human boundary
+→ [5 Bắt đầu setup, biết trước chỗ nào sẽ kẹt và chỗ nào đã có người giải trong issue]
 
-Fallback: Nếu tool báo "đủ" nhưng vẫn bị stuck khi code thật → quay lại quy trình cũ (tự đọc, tự hỏi tác giả). Tool chỉ giảm rủi ro bị kẹt bất ngờ, không đảm bảo reproduce được 100%.
+Fallback: tool báo "đủ" nhưng vẫn kẹt → quay lại quy trình cũ. Tool giảm rủi ro kẹt bất ngờ, không hứa reproduce được 100%.
 ```
 
 File đính kèm (nếu vẽ riêng): `01-individual-problem-scan-workflow-card-1.png`
@@ -250,8 +263,8 @@ Mỗi lần reproduce 1 baseline mất ~2 ngày, và có thể bị kẹt vô h�
 ```
 
 **AI phản biện Card (nếu có):**
-- Điểm yếu AI chỉ ra: Layer Agent (tự bù phần thiếu tài liệu ở cả paper và repo) là chỗ mọi tool hiện tại đang fail/hallucinate nhiều nhất — nếu tham lam đẩy giải pháp lên mức Agent tự động hoàn toàn sẽ rủi ro cao mà lợi ích không rõ hơn Workflow.
-- Tôi sửa gì: Giữ Quick gut ở mức Workflow (Rule cho phần structural + pipeline diff cố định cho phần semantic), chỉ dừng ở việc flag "thiếu/lệch/chưa document", không để AI tự đoán số hay tự sinh code thay.
+- Điểm yếu AI chỉ ra: (1) Mức "agent tự sinh lại toàn bộ code" là chỗ mọi tool hiện tại fail nặng nhất — PaperBench cho thấy agent tốt nhất chỉ đạt 21.0% so với người 41.4%. (2) Success metric ban đầu ("giảm thời gian phát hiện thiếu") là metric cảm tính, khó đo khách quan. (3) Đã có negative ablation study cho thấy orchestration multi-agent có thể không tạo thêm giá trị so với pipeline đơn giản.
+- Tôi sửa gì: (1) Giới hạn phạm vi agent ở tầng *thu thập và chẩn đoán*, không cho sinh code hay tự điền giá trị đoán — người giữ quyết định cuối. (2) Đổi sang một metric khách quan duy nhất: exact-localization accuracy (top-3) trên benchmark ReproRepo đã release, có nhãn thật từ GitHub Issues, thay vì tự ước lượng thời gian. (3) Chấp nhận rằng phải so với baseline single-prompt LLM, nếu không vượt thì multi-agent là thừa.
 
 ### Self-check nộp phần 01
 - [ ] Có 5+ problems + top 3 Cards đủ field
