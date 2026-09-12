@@ -84,10 +84,8 @@ Bước 4-5. Thiếu gì chỉ lộ ra khi đã đầu tư thời gian, nên kh�
 Impact:
 ~16h/baseline; 1 project 3-4 baseline → 6-8 ngày chỉ để setup, chưa tính lúc bị kẹt. Quy mô ngành: khảo sát Nature (1.576 researcher) — hơn 70% từng fail reproduce công trình người khác.
 
-Success metric (metric duy nhất):
-Exact-localization accuracy (top-3) trên benchmark ReproRepo (EMNLP 2026, 1.149 paper, nhãn lấy từ GitHub Issues người thật raise): trong 3 mục tool chỉ ra, có mục nào trùng đúng blocker thật ở mức item (đúng file / đúng config field / đúng bước) không.
-Lý do chọn metric này: ReproRepo cho thấy agent hiện tại surface được blocker cho ~90% paper nhưng yếu đúng ở exact localization → đây là khoảng trống đo được, và benchmark đã release sẵn nên không phải tự dựng ground truth.
-Baseline phải vượt: single-prompt LLM (hỏi thẳng "paper này thiếu gì").
+Success metric:
+Exact-localization accuracy (top-3) trên benchmark ReproRepo (EMNLP 2026, 1.149 paper, nhãn lấy từ GitHub Issues do người thật raise): trong 3 mục tool chỉ ra, có mục nào trùng đúng blocker thật ở mức item (đúng file / đúng config field / đúng bước) hay không. Hiện trạng ban đầu: tự mò, không có số. Mục tiêu: vượt baseline single-prompt LLM (hỏi thẳng "paper này thiếu gì") trên cùng benchmark. Chọn metric này vì ReproRepo cho thấy agent hiện tại surface được blocker cho ~90% paper nhưng yếu đúng ở khâu exact localization, và benchmark đã release sẵn nên không phải tự dựng ground truth.
 
 Non-AI alternative:
 Tự tick ML Code Completeness Checklist (Papers with Code / NeurIPS, 5 mục). Rẻ, nhưng chỉ biết "có file hay không", không biết config có khớp số trong paper không, và không tìm được câu trả lời nằm trong GitHub issue đã đóng.
@@ -100,16 +98,14 @@ Multi-agent "ReproScout", 3 agent thu thập + 1 agent tổng hợp:
   - Reconciler   : đối chiếu 3 nguồn → mỗi mục checklist gán: đủ / thiếu-lệch / không chắc,
                    kèm trích dẫn nguồn
 Multi-agent là cần thiết vì 3 nguồn khác loại nhau (PDF đa phương thức, code, thread issue), mỗi nguồn cần cách tìm riêng và phải tự quyết query — một prompt đơn không ôm nổi.
+Agent chỉ được phép ở tầng thu thập và chẩn đoán; orchestration cố định 4 stage, người giữ quyết định cuối. Không đẩy lên mức tự sinh lại code vì PaperBench cho thấy agent tốt nhất chỉ đạt 21.0% so với người 41.4% — chưa đủ tin để giao.
 Boundary: không sinh code thay, không tự điền giá trị đoán; mục "không chắc" bắt buộc người xem trước khi kết luận.
 
 Quick gut:
 [ ] No AI / process fix
 [ ] Rule
 [ ] Workflow
-[x] Agent   — agent ở tầng thu thập (tự quyết query/tool để tìm trong repo & issue),
-              nhưng orchestration cố định 4 stage và người giữ quyết định cuối.
-              Không chọn mức tự sinh code vì PaperBench cho thấy agent tốt nhất chỉ
-              đạt 21.0% so với người 41.4% — chưa đủ tin để giao.
+[x] Agent
 [ ] Chưa biết
 ```
 
